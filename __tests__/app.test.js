@@ -30,9 +30,14 @@ describe("GET /api/topics", () => {
       .get("/api/topics")
       .expect(200)
       .then(({ body }) => {
-        expect(Object.keys(body.topics[0])).toEqual(
-          expect.arrayContaining(["slug", "description"])
-        );
+        const { topics } = body;
+        expect(topics).toBeInstanceOf(Array);
+        expect(topics).toHaveLength(3);
+        topics.forEach((topic) => {
+          expect(Object.keys(topic)).toEqual(
+            expect.arrayContaining(["slug", "description"])
+          );
+        });
       });
   });
 });
