@@ -15,3 +15,25 @@ exports.selectArticles = () => {
       return rows;
     });
 };
+
+exports.selectArticleById = (id) => {
+  return db
+    .query(
+      `SELECT articles.article_id,
+      articles.author,
+      title,
+      body,
+      topic,
+      created_at,
+      votes
+      FROM articles
+      WHERE article_id = $1`,
+      [id]
+    )
+    .then(({ rows }) => {
+      if (!rows.length) {
+        return Promise.reject({ status: 404, msg: "Article does not exist" });
+      }
+      return rows[0];
+    });
+};
