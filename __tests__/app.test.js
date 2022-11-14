@@ -41,3 +41,38 @@ describe("GET /api/topics", () => {
       });
   });
 });
+
+describe("GET /api/articles", () => {
+  test("200: sends an array of articles to the client", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toBeInstanceOf(Array);
+        expect(articles).toHaveLength(12);
+        articles.forEach((article) => {
+          expect(Object.keys(article)).toEqual(
+            expect.arrayContaining([
+              "article_id",
+              "author",
+              "title",
+              "topic",
+              "created_at",
+              "votes",
+              "comment_count",
+            ])
+          );
+        });
+      });
+  });
+  test("200: sends an array of articles ordered by descending date order", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toBeSortedBy("created_at", { descending: true });
+      });
+  });
+});
