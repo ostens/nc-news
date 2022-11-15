@@ -120,18 +120,15 @@ describe("GET /api/articles/:article_id/comments", () => {
       .expect(200)
       .then(({ body }) => {
         const { comments } = body;
-        expect(comments).toBeInstanceOf(Array);
         expect(comments).toHaveLength(11);
         comments.forEach((comment) => {
-          expect(Object.keys(comment)).toEqual(
-            expect.arrayContaining([
-              "comment_id",
-              "votes",
-              "created_at",
-              "author",
-              "body",
-            ])
-          );
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+          });
         });
       });
   });
@@ -142,6 +139,15 @@ describe("GET /api/articles/:article_id/comments", () => {
       .then(({ body }) => {
         const { comments } = body;
         expect(comments).toBeSortedBy("created_at", { descending: true });
+      });
+  });
+  test("200: returns an empty array when article has no comments", () => {
+    return request(app)
+      .get("/api/articles/2/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const { comments } = body;
+        expect(comments).toEqual([]);
       });
   });
   test("400: returns an error message when passed an invalid id", () => {
@@ -157,7 +163,7 @@ describe("GET /api/articles/:article_id/comments", () => {
       .get("/api/articles/500/comments")
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("No comments found");
+        expect(body.msg).toBe("Article does not exist");
       });
   });
 });

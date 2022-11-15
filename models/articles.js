@@ -1,4 +1,5 @@
 const db = require("../db/connection");
+const { checkArticleExists } = require("../utils/db");
 
 exports.selectArticles = () => {
   return db
@@ -39,19 +40,18 @@ exports.selectArticleById = (id) => {
 };
 
 exports.selectCommentsByArticleId = (id) => {
-  return db
-    .query(
-      `
-    SELECT comment_id, votes, created_at, author, body FROM comments
-    WHERE article_id = $1
-    ORDER BY created_at DESC;
-    `,
-      [id]
-    )
+  return checkArticleExists(id)
+    .then(() => {
+      return db.query(
+        `
+        SELECT comment_id, votes, created_at, author, body FROM comments
+        WHERE article_id = $1
+        ORDER BY created_at DESC;
+      `,
+        [id]
+      );
+    })
     .then(({ rows }) => {
-      if (!rows.length) {
-        return Promise.reject({ status: 404, msg: "No comments found" });
-      }
       return rows;
     });
 };
