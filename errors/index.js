@@ -12,3 +12,7 @@ exports.customErrorHandler = (err, req, res, next) => {
     next(err);
   }
 };
+
+exports.catchAllErrorHandler = (err, req, res, next) => {
+  res.status(500).send({ msg: "Internal server error" });
+};

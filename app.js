@@ -5,7 +5,11 @@ const {
   getCommentsByArticleId,
 } = require("./controllers/articles");
 const { getTopics } = require("./controllers/topics");
-const { psqlErrorHandler, customErrorHandler } = require("./errors");
+const {
+  psqlErrorHandler,
+  customErrorHandler,
+  catchAllErrorHandler,
+} = require("./errors");
 
 const app = express();
 
@@ -21,5 +25,6 @@ app.all("/*", (req, res) => {
 
 app.use(psqlErrorHandler);
 app.use(customErrorHandler);
+app.use(catchAllErrorHandler);
 
 module.exports = app;
