@@ -1,20 +1,40 @@
 const db = require("../db/connection");
-const { checkArticleExists } = require("../utils/db");
+const { checkArticleExists, checkTopicExists } = require("../utils/db");
 
-exports.selectArticles = () => {
-  return db
-    .query(
-      `
-  SELECT articles.article_id, title, topic, articles.author, articles.created_at, articles.votes, 
-  COUNT(comment_id) as comment_count 
-  FROM articles
-  LEFT JOIN comments on comments.article_id = articles.article_id
-  GROUP BY articles.article_id
-  ORDER BY created_at DESC;`
-    )
-    .then(({ rows }) => {
-      return rows;
-    });
+exports.selectArticles = (topic, sort_by = "created_at", order = "desc") => {
+  if (!["created_at", "votes", "title", "topic", "author"].includes(sort_by)) {
+    return Promise.reject({ status: 400, msg: "Invalid sort query" });
+  }
+  if (!["asc", "desc"].includes(order)) {
+    return Promise.reject({ status: 400, msg: "Invalid order query" });
+  }
+
+  const queryValues = [];
+  let queryStr = `
+    SELECT articles.article_id, title, topic, articles.author, articles.created_at, articles.votes, 
+    COUNT(comment_id) as comment_count 
+    FROM articles
+    LEFT JOIN comments on comments.article_id = articles.article_id
+  `;
+
+  if (topic) {
+    queryValues.push(topic);
+    queryStr += ` WHERE topic = $1`;
+  }
+
+  queryStr += `
+     GROUP BY articles.article_id
+    ORDER BY ${sort_by} ${order};
+    `;
+
+  return db.query(queryStr, queryValues).then(({ rows }) => {
+    if (!rows.length) {
+      return checkTopicExists(topic).then(() => {
+        return [];
+      });
+    }
+    return rows;
+  });
 };
 
 exports.selectArticleById = (id) => {

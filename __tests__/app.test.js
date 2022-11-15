@@ -66,14 +66,82 @@ describe("GET /api/articles", () => {
         });
       });
   });
-  test("200: sends an array of articles ordered by descending date order", () => {
-    return request(app)
-      .get("/api/articles")
-      .expect(200)
-      .then(({ body }) => {
-        const { articles } = body;
-        expect(articles).toBeSortedBy("created_at", { descending: true });
-      });
+  describe("queries - topic", () => {
+    test("200: filters by topic when topic is passed in query", () => {
+      return request(app)
+        .get("/api/articles?topic=mitch")
+        .expect(200)
+        .then(({ body }) => {
+          const { articles } = body;
+          articles.forEach((article) => {
+            expect(article.topic).toBe("mitch");
+          });
+        });
+    });
+    test("200: returns an empty array when passed a valid topic with no linked articles", () => {
+      return request(app)
+        .get("/api/articles?topic=paper")
+        .expect(200)
+        .then(({ body }) => {
+          const { articles } = body;
+          expect(articles).toEqual([]);
+        });
+    });
+    test("404: returns an error message when passed a topic that does not exist", () => {
+      return request(app)
+        .get("/api/articles?topic=bananas")
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Topic does not exist");
+        });
+    });
+  });
+  describe("queries - sort_by", () => {
+    test("200: articles are sorted by descending date order by default", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body }) => {
+          const { articles } = body;
+          expect(articles).toBeSortedBy("created_at", { descending: true });
+        });
+    });
+    test("200: articles are sorted by specified column when passed in query", () => {
+      return request(app)
+        .get("/api/articles?sort_by=votes")
+        .expect(200)
+        .then(({ body }) => {
+          const { articles } = body;
+          expect(articles).toBeSortedBy("votes", { descending: true });
+        });
+    });
+    test("400: returns an error message when passed an invalid column to sort_by", () => {
+      return request(app)
+        .get("/api/articles?sort_by=coolness")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Invalid sort query");
+        });
+    });
+  });
+  describe("queries - order (asc/desc)", () => {
+    test("200: articles are sorted by ascending date order when order asc is passed in query", () => {
+      return request(app)
+        .get("/api/articles?order=asc")
+        .expect(200)
+        .then(({ body }) => {
+          const { articles } = body;
+          expect(articles).toBeSortedBy("created_at");
+        });
+    });
+    test("400: returns an error message when passed an invalid order", () => {
+      return request(app)
+        .get("/api/articles?order=fun")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Invalid order query");
+        });
+    });
   });
 });
 
