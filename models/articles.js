@@ -72,3 +72,21 @@ exports.insertCommentByArticleId = (articleId, article) => {
     })
     .then(({ rows }) => rows[0]);
 };
+
+exports.updateArticleById = (id, votes) => {
+  return checkArticleExists(id)
+    .then(() => {
+      return db.query(
+        `
+          UPDATE articles
+          SET votes = votes + $2
+          WHERE article_id = $1
+          RETURNING *;
+        `,
+        [id, votes]
+      );
+    })
+    .then(({ rows }) => {
+      return rows[0];
+    });
+};

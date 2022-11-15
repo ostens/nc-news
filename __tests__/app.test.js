@@ -268,3 +268,96 @@ describe("POST /api/articles/:article_id/comments", () => {
       });
   });
 });
+
+describe("PATCH /api/articles/:article_id", () => {
+  test("200: updates an article by provided votes and returns updated article", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({ inc_votes: 50 })
+      .expect(200)
+      .then(({ body }) => {
+        const { article } = body;
+        expect(article).toEqual({
+          article_id: 1,
+          title: "Living in the shadow of a great man",
+          topic: "mitch",
+          author: "butter_bridge",
+          body: "I find this existence challenging",
+          created_at: expect.any(String),
+          votes: 150,
+        });
+      });
+  });
+  test("200: updates an article to subtract votes when passed negative inc_votes", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({ inc_votes: -150 })
+      .expect(200)
+      .then(({ body }) => {
+        const { article } = body;
+        expect(article).toEqual({
+          article_id: 1,
+          title: "Living in the shadow of a great man",
+          topic: "mitch",
+          author: "butter_bridge",
+          body: "I find this existence challenging",
+          created_at: expect.any(String),
+          votes: -50,
+        });
+      });
+  });
+  test("400: returns an error message when passed an invalid id", () => {
+    return request(app)
+      .patch("/api/articles/banana")
+      .send({ inc_votes: 50 })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+  test("404: returns an error message when passed a valid but non-existent id", () => {
+    return request(app)
+      .patch("/api/articles/500")
+      .send({ inc_votes: 50 })
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Article does not exist");
+      });
+  });
+  test("400: returns an error message when passed an invalid number of votes (not a number)", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({ inc_votes: "banana" })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+  test("400: returns an error message when passed an invalid number of votes (not an integer)", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({ inc_votes: 5.5 })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+  test("400: returns an error message when passed an invalid body (misspelled inc_votes)", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({ inc__votes: 1 })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+  test("400: returns an error message when passed an invalid body (missing required property inc_votes)", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({})
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+});
