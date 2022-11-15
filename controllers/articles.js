@@ -6,10 +6,12 @@ const {
   updateArticleById,
 } = require("../models/articles");
 
-exports.getArticles = (req, res) => {
-  selectArticles().then((articles) => {
-    res.status(200).send({ articles });
-  });
+exports.getArticles = (req, res, next) => {
+  selectArticles()
+    .then((articles) => {
+      res.status(200).send({ articles });
+    })
+    .catch(next);
 };
 
 exports.getArticleById = (req, res, next) => {
