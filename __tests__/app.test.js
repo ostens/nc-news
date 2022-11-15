@@ -92,7 +92,7 @@ describe("GET /api/articles", () => {
         .get("/api/articles?topic=bananas")
         .expect(404)
         .then(({ body }) => {
-          expect(body.msg).toBe("Topic does not exist");
+          expect(body.msg).toBe("Resource not found");
         });
     });
   });
@@ -176,7 +176,7 @@ describe("GET /api/articles/:article_id", () => {
       .get("/api/articles/500")
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("Article does not exist");
+        expect(body.msg).toBe("Resource not found");
       });
   });
 });
@@ -231,7 +231,7 @@ describe("GET /api/articles/:article_id/comments", () => {
       .get("/api/articles/500/comments")
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("Article does not exist");
+        expect(body.msg).toBe("Resource not found");
       });
   });
 });
@@ -292,7 +292,7 @@ describe("POST /api/articles/:article_id/comments", () => {
       .send(newComment)
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("Article does not exist");
+        expect(body.msg).toBe("Resource not found");
       });
   });
   test("400: returns an error message when passed an invalid body with missing required field", () => {
@@ -389,7 +389,7 @@ describe("PATCH /api/articles/:article_id", () => {
       .send({ inc_votes: 50 })
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("Article does not exist");
+        expect(body.msg).toBe("Resource not found");
       });
   });
   test("400: returns an error message when passed an invalid number of votes (not a number)", () => {

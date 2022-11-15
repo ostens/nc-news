@@ -1,5 +1,5 @@
 const db = require("../db/connection");
-const { checkArticleExists, checkTopicExists } = require("../utils/db");
+const { checkExists } = require("../utils/db");
 
 exports.selectArticles = (topic, sort_by = "created_at", order = "desc") => {
   if (!["created_at", "votes", "title", "topic", "author"].includes(sort_by)) {
@@ -29,7 +29,7 @@ exports.selectArticles = (topic, sort_by = "created_at", order = "desc") => {
 
   return db.query(queryStr, queryValues).then(({ rows }) => {
     if (!rows.length) {
-      return checkTopicExists(topic).then(() => {
+      return checkExists("topics", "slug", topic).then(() => {
         return [];
       });
     }
@@ -53,14 +53,14 @@ exports.selectArticleById = (id) => {
     )
     .then(({ rows }) => {
       if (!rows.length) {
-        return Promise.reject({ status: 404, msg: "Article does not exist" });
+        return Promise.reject({ status: 404, msg: "Resource not found" });
       }
       return rows[0];
     });
 };
 
 exports.selectCommentsByArticleId = (id) => {
-  return checkArticleExists(id)
+  return checkExists("articles", "article_id", id)
     .then(() => {
       return db.query(
         `
@@ -77,7 +77,7 @@ exports.selectCommentsByArticleId = (id) => {
 };
 
 exports.insertCommentByArticleId = (articleId, article) => {
-  return checkArticleExists(articleId)
+  return checkExists("articles", "article_id", articleId)
     .then(() => {
       return db.query(
         `
@@ -94,7 +94,7 @@ exports.insertCommentByArticleId = (articleId, article) => {
 };
 
 exports.updateArticleById = (id, votes) => {
-  return checkArticleExists(id)
+  return checkExists("articles", "article_id", id)
     .then(() => {
       return db.query(
         `

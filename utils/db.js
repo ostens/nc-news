@@ -1,32 +1,16 @@
 const db = require("../db/connection");
+const format = require("pg-format");
 
-exports.checkArticleExists = (id) => {
-  return db
-    .query(
-      `
-        SELECT * FROM articles
-        WHERE article_id = $1
-        `,
-      [id]
-    )
-    .then(({ rows }) => {
-      if (!rows.length) {
-        return Promise.reject({ status: 404, msg: "Article does not exist" });
-      }
-    });
-};
-exports.checkTopicExists = (topic) => {
-  return db
-    .query(
-      `
-        SELECT * FROM topics
-        WHERE slug = $1
-        `,
-      [topic]
-    )
-    .then(({ rows }) => {
-      if (!rows.length) {
-        return Promise.reject({ status: 404, msg: "Topic does not exist" });
-      }
-    });
+exports.checkExists = (table, column, value) => {
+  const queryStr = format(
+    "SELECT * FROM %I WHERE %I = %L;",
+    table,
+    column,
+    value
+  );
+  return db.query(queryStr).then((res) => {
+    if (res.rows.length === 0) {
+      return Promise.reject({ status: 404, msg: "Resource not found" });
+    }
+  });
 };
