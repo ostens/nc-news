@@ -167,3 +167,104 @@ describe("GET /api/articles/:article_id/comments", () => {
       });
   });
 });
+
+describe("POST /api/articles/:article_id/comments", () => {
+  test("201: inserts a new comment and returns the inserted comment to the client ", () => {
+    const newComment = { username: "butter_bridge", body: "cool stuff" };
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(newComment)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.comment).toEqual({
+          comment_id: 19,
+          article_id: 1,
+          votes: 0,
+          created_at: expect.any(String),
+          author: "butter_bridge",
+          body: "cool stuff",
+        });
+      });
+  });
+  test("201: inserts a new comment and returns the inserted comment to the client if an additional property is provided ", () => {
+    const newComment = {
+      username: "butter_bridge",
+      body: "cool stuff",
+      otherProperty: "thing",
+    };
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(newComment)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.comment).toEqual({
+          comment_id: 19,
+          article_id: 1,
+          votes: 0,
+          created_at: expect.any(String),
+          author: "butter_bridge",
+          body: "cool stuff",
+        });
+      });
+  });
+  test("400: returns an error message when passed an invalid id", () => {
+    const newComment = { username: "butter_bridge", body: "cool stuff" };
+    return request(app)
+      .post("/api/articles/banana/comments")
+      .send(newComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+  test("404: returns an error message when passed a valid but non-existent article id", () => {
+    const newComment = { username: "butter_bridge", body: "cool stuff" };
+    return request(app)
+      .post("/api/articles/500/comments")
+      .send(newComment)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Article does not exist");
+      });
+  });
+  test("400: returns an error message when passed an invalid body with missing required field", () => {
+    const newComment = { body: "cool stuff" };
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(newComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+  test("404: returns an error message when passed an invalid body with user that doesn't exist", () => {
+    const newComment = { username: "coolcat", body: "cool stuff" };
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(newComment)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("User does not exist");
+      });
+  });
+  test("400: returns an error message when passed misspelled username property", () => {
+    const newComment = { usernam: "butter_bridge", body: "cool stuff" };
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(newComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+  test("400: returns an error message when passed misspelled body property", () => {
+    const newComment = { username: "butter_bridge", boddy: "cool stuff" };
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(newComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+});
