@@ -186,6 +186,27 @@ describe("POST /api/articles/:article_id/comments", () => {
         });
       });
   });
+  test("201: inserts a new comment and returns the inserted comment to the client if an additional property is provided ", () => {
+    const newComment = {
+      username: "butter_bridge",
+      body: "cool stuff",
+      otherProperty: "thing",
+    };
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(newComment)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.comment).toEqual({
+          comment_id: 19,
+          article_id: 1,
+          votes: 0,
+          created_at: expect.any(String),
+          author: "butter_bridge",
+          body: "cool stuff",
+        });
+      });
+  });
   test("400: returns an error message when passed an invalid id", () => {
     const newComment = { username: "butter_bridge", body: "cool stuff" };
     return request(app)
@@ -223,7 +244,7 @@ describe("POST /api/articles/:article_id/comments", () => {
       .send(newComment)
       .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe("Bad request");
+        expect(body.msg).toBe("User does not exist");
       });
   });
   test("400: returns an error message when passed misspelled username property", () => {
