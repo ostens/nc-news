@@ -55,3 +55,20 @@ exports.selectCommentsByArticleId = (id) => {
       return rows;
     });
 };
+
+exports.insertCommentByArticleId = (articleId, article) => {
+  return checkArticleExists(articleId)
+    .then(() => {
+      return db.query(
+        `
+        INSERT INTO comments
+        (author, body, article_id)
+        VALUES
+        ($1, $2, $3)
+        RETURNING *;
+    `,
+        [article.username, article.body, articleId]
+      );
+    })
+    .then(({ rows }) => rows[0]);
+};
