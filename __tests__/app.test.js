@@ -226,4 +226,24 @@ describe("POST /api/articles/:article_id/comments", () => {
         expect(body.msg).toBe("Bad request");
       });
   });
+  test("400: returns an error message when passed misspelled username property", () => {
+    const newComment = { usernam: "butter_bridge", body: "cool stuff" };
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(newComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+  test("400: returns an error message when passed misspelled body property", () => {
+    const newComment = { username: "butter_bridge", boddy: "cool stuff" };
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(newComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
 });
