@@ -178,16 +178,26 @@ describe("GET /api/articles/:article_id", () => {
       .expect(200)
       .then(({ body }) => {
         const { article } = body;
-        expect(article).toEqual({
-          article_id: 1,
-          author: "butter_bridge",
-          title: "Living in the shadow of a great man",
-          body: "I find this existence challenging",
-          topic: "mitch",
-          created_at: "2020-07-09T20:11:00.000Z",
-          votes: 100,
-          comment_count: 11,
-        });
+        expect(article).toEqual(
+          expect.objectContaining({
+            article_id: 1,
+            author: "butter_bridge",
+            title: "Living in the shadow of a great man",
+            body: "I find this existence challenging",
+            topic: "mitch",
+            created_at: "2020-07-09T20:11:00.000Z",
+            votes: 100,
+          })
+        );
+      });
+  });
+  test("200: returns an article with comment_count to the client", () => {
+    return request(app)
+      .get("/api/articles/1")
+      .expect(200)
+      .then(({ body }) => {
+        const { article } = body;
+        expect(article.comment_count).toBe(11);
       });
   });
   test("400: returns an error message when passed an invalid id", () => {
