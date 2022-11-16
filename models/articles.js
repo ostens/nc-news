@@ -19,7 +19,7 @@ exports.selectArticles = (query) => {
   const queryValues = [];
   let queryStr = `
     SELECT articles.article_id, title, topic, articles.author, articles.created_at, articles.votes, 
-    COUNT(comment_id) as comment_count 
+    COUNT(comment_id)::INT as comment_count 
     FROM articles
     LEFT JOIN comments on comments.article_id = articles.article_id
   `;
