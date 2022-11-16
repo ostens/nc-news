@@ -1,7 +1,14 @@
 const db = require("../db/connection");
 const { checkExists } = require("../utils/db");
 
-exports.selectArticles = (topic, sort_by = "created_at", order = "desc") => {
+exports.selectArticles = (query) => {
+  if (
+    !["sort_by", "order", "topic"].includes(...Object.keys(query)) &&
+    Object.keys(query).length !== 0
+  ) {
+    return Promise.reject({ status: 400, msg: "Invalid query" });
+  }
+  const { topic, sort_by = "created_at", order = "desc" } = query;
   if (!["created_at", "votes", "title", "topic", "author"].includes(sort_by)) {
     return Promise.reject({ status: 400, msg: "Invalid sort query" });
   }

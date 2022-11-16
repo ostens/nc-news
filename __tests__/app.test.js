@@ -143,6 +143,32 @@ describe("GET /api/articles", () => {
         });
     });
   });
+  describe("query - invalid", () => {
+    test("400: returns an error message articles if topic query is misspelled ", () => {
+      return request(app)
+        .get("/api/articles?topik=cats")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Invalid query");
+        });
+    });
+    test("400: returns an error message articles if order query is misspelled ", () => {
+      return request(app)
+        .get("/api/articles?ordering=asc")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Invalid query");
+        });
+    });
+    test("400: returns an error message articles if sort_by query is misspelled ", () => {
+      return request(app)
+        .get("/api/articles?sortby=title")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Invalid query");
+        });
+    });
+  });
 });
 
 describe("GET /api/articles/:article_id", () => {
