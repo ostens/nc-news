@@ -1,20 +1,47 @@
 const db = require("../db/connection");
-const { checkArticleExists } = require("../utils/db");
+const { checkExists } = require("../utils/db");
 
-exports.selectArticles = () => {
-  return db
-    .query(
-      `
-  SELECT articles.article_id, title, topic, articles.author, articles.created_at, articles.votes, 
-  COUNT(comment_id)::INT as comment_count 
-  FROM articles
-  LEFT JOIN comments on comments.article_id = articles.article_id
-  GROUP BY articles.article_id
-  ORDER BY created_at DESC;`
-    )
-    .then(({ rows }) => {
-      return rows;
-    });
+exports.selectArticles = (query) => {
+  if (
+    !["sort_by", "order", "topic"].includes(...Object.keys(query)) &&
+    Object.keys(query).length !== 0
+  ) {
+    return Promise.reject({ status: 400, msg: "Invalid query" });
+  }
+  const { topic, sort_by = "created_at", order = "desc" } = query;
+  if (!["created_at", "votes", "title", "topic", "author"].includes(sort_by)) {
+    return Promise.reject({ status: 400, msg: "Invalid sort query" });
+  }
+  if (!["asc", "desc"].includes(order)) {
+    return Promise.reject({ status: 400, msg: "Invalid order query" });
+  }
+
+  const queryValues = [];
+  let queryStr = `
+    SELECT articles.article_id, title, topic, articles.author, articles.created_at, articles.votes, 
+    COUNT(comment_id) as comment_count 
+    FROM articles
+    LEFT JOIN comments on comments.article_id = articles.article_id
+  `;
+
+  if (topic) {
+    queryValues.push(topic);
+    queryStr += ` WHERE topic = $1`;
+  }
+
+  queryStr += `
+     GROUP BY articles.article_id
+    ORDER BY ${sort_by} ${order};
+    `;
+
+  return db.query(queryStr, queryValues).then(({ rows }) => {
+    if (!rows.length) {
+      return checkExists("topics", "slug", topic).then(() => {
+        return [];
+      });
+    }
+    return rows;
+  });
 };
 
 exports.selectArticleById = (id) => {
@@ -36,14 +63,14 @@ exports.selectArticleById = (id) => {
     )
     .then(({ rows }) => {
       if (!rows.length) {
-        return Promise.reject({ status: 404, msg: "Article does not exist" });
+        return Promise.reject({ status: 404, msg: "Resource not found" });
       }
       return rows[0];
     });
 };
 
 exports.selectCommentsByArticleId = (id) => {
-  return checkArticleExists(id)
+  return checkExists("articles", "article_id", id)
     .then(() => {
       return db.query(
         `
@@ -60,7 +87,7 @@ exports.selectCommentsByArticleId = (id) => {
 };
 
 exports.insertCommentByArticleId = (articleId, article) => {
-  return checkArticleExists(articleId)
+  return checkExists("articles", "article_id", articleId)
     .then(() => {
       return db.query(
         `
@@ -77,7 +104,7 @@ exports.insertCommentByArticleId = (articleId, article) => {
 };
 
 exports.updateArticleById = (id, votes) => {
-  return checkArticleExists(id)
+  return checkExists("articles", "article_id", id)
     .then(() => {
       return db.query(
         `
