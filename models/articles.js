@@ -6,7 +6,7 @@ exports.selectArticles = () => {
     .query(
       `
   SELECT articles.article_id, title, topic, articles.author, articles.created_at, articles.votes, 
-  COUNT(comment_id) as comment_count 
+  COUNT(comment_id)::INT as comment_count 
   FROM articles
   LEFT JOIN comments on comments.article_id = articles.article_id
   GROUP BY articles.article_id
@@ -23,12 +23,15 @@ exports.selectArticleById = (id) => {
       `SELECT articles.article_id,
       articles.author,
       title,
-      body,
+      articles.body,
       topic,
-      created_at,
-      votes
+      articles.created_at,
+      articles.votes,
+      COUNT(comment_id)::INT as comment_count 
       FROM articles
-      WHERE article_id = $1`,
+      LEFT JOIN comments on comments.article_id = articles.article_id
+      WHERE articles.article_id = $1
+      GROUP BY articles.article_id`,
       [id]
     )
     .then(({ rows }) => {
