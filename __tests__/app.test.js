@@ -467,6 +467,33 @@ describe("PATCH /api/articles/:article_id", () => {
   });
 });
 
+describe("DELETE /api/articles/:article_id", () => {
+  test("204: deletes the given article and returns no content to the client", () => {
+    return request(app)
+      .delete("/api/articles/1")
+      .expect(204)
+      .then(({ body }) => {
+        expect(body).toEqual({});
+      });
+  });
+  test("400: returns an error message when passed an invalid article id", () => {
+    return request(app)
+      .delete("/api/articles/bananas")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+  test("404: returns an error message when passed a valid but nonexistent article id", () => {
+    return request(app)
+      .delete("/api/articles/500")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Resource not found");
+      });
+  });
+});
+
 describe("GET /api/users", () => {
   test("200: sends an array of users to the client", () => {
     return request(app)

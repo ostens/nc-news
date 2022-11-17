@@ -120,3 +120,15 @@ exports.updateArticleById = (id, votes) => {
       return rows[0];
     });
 };
+
+exports.removeArticleById = (id) => {
+  return checkExists("articles", "article_id", id).then(() => {
+    return db.query(
+      `
+    DELETE FROM articles
+    WHERE article_id = $1;
+    `,
+      [id]
+    );
+  });
+};
