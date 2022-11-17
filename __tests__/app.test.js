@@ -512,6 +512,71 @@ describe("DELETE /api/articles/:article_id", () => {
   });
 });
 
+describe("PATCH /api/comments/:comment_id", () => {
+  test("200: updates a comment by provided votes and returns updated comment", () => {
+    return request(app)
+      .patch("/api/comments/1")
+      .send({ inc_votes: 1 })
+      .expect(200)
+      .then(({ body }) => {
+        const { comment } = body;
+        expect(comment).toEqual({
+          comment_id: 1,
+          article_id: 9,
+          author: "butter_bridge",
+          body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+          created_at: expect.any(String),
+          votes: 17,
+        });
+      });
+  });
+  test("400: returns an error when passed an invalid id", () => {
+    return request(app)
+      .patch("/api/comments/banana")
+      .send({ inc_votes: 1 })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+  test("404: returns an error when passed an valid id that does not exist", () => {
+    return request(app)
+      .patch("/api/comments/500")
+      .send({ inc_votes: 1 })
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Resource not found");
+      });
+  });
+  test("400: returns an error when passed an invalid number of votes (string)", () => {
+    return request(app)
+      .patch("/api/comments/1")
+      .send({ inc_votes: "banana" })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+  test("400: returns an error when passed an invalid number of votes (decimal)", () => {
+    return request(app)
+      .patch("/api/comments/1")
+      .send({ inc_votes: 1.4 })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+  test("400: returns an error when passed a missing number of votes", () => {
+    return request(app)
+      .patch("/api/comments/1")
+      .send({})
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+});
+
 describe("GET /api/users", () => {
   test("200: sends an array of users to the client", () => {
     return request(app)
