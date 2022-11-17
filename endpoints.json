@@ -10,16 +10,102 @@
     }
   },
   "GET /api/articles": {
-    "description": "serves an array of all topics",
-    "queries": ["author", "topic", "sort_by", "order"],
+    "description": "serves an array of all articles",
+    "queries": ["topic", "sort_by", "order"],
     "exampleResponse": {
       "articles": [
         {
+          "article_id": 1,
           "title": "Seafood substitutions are increasing",
           "topic": "cooking",
           "author": "weegembump",
           "body": "Text from the article..",
-          "created_at": 1527695953341
+          "created_at": "2022-11-16T09:50:30.496Z",
+          "votes": 0,
+          "comment_count": 0
+        }
+      ]
+    }
+  },
+  "GET /api/articles/:article_id": {
+    "description": "serves a single article",
+    "queries": [],
+    "exampleResponse": {
+      "article": {
+        "article_id": 1,
+        "title": "Seafood substitutions are increasing",
+        "topic": "cooking",
+        "author": "weegembump",
+        "body": "Text from the article..",
+        "created_at": "2022-11-16T09:50:30.496Z",
+        "votes": 0,
+        "comment_count": 0
+      }
+    }
+  },
+  "GET /api/articles/:article_id/comments": {
+    "description": "serves an array of comments linked to an article",
+    "queries": [],
+    "exampleResponse": {
+      "comments": [
+        {
+          "comment_id": 1,
+          "votes": 1,
+          "created_at": "2022-11-16T09:50:30.496Z",
+          "author": "butter_bridge",
+          "body": "The owls are not what they seem."
+        }
+      ]
+    }
+  },
+  "POST /api/articles/:article_id/comments": {
+    "description": "creates a new comment linked to an article and returns the created comment",
+    "queries": [],
+    "exampleBody": {
+      "author": "butter_bridge",
+      "body": "The owls are not what they seem."
+    },
+    "exampleResponse": {
+      "comment": {
+        "comment_id": 1,
+        "votes": 0,
+        "created_at": "2022-11-16T09:50:30.496Z",
+        "author": "butter_bridge",
+        "body": "The owls are not what they seem."
+      }
+    }
+  },
+  "PATCH /api/articles/:article_id": {
+    "description": "updates the votes on an article",
+    "queries": [],
+    "exampleBody": { "inc_votes": 1 },
+    "exampleResponse": {
+      "article": {
+        "article_id": 1,
+        "title": "Seafood substitutions are increasing",
+        "topic": "cooking",
+        "author": "weegembump",
+        "body": "Text from the article..",
+        "created_at": "2022-11-16T09:50:30.496Z",
+        "votes": 1,
+        "comment_count": 0
+      }
+    }
+  },
+  "DELETE /api/articles/:article_id": {
+    "description": "deletes an article",
+    "queries": [],
+    "exampleResponse": {}
+  },
+  "GET /api/users": {
+    "description": "serves an array of all users",
+    "queries": [],
+    "exampleResponse": {
+      "users": [
+        {
+          "username": "butter_bridge",
+          "name": "jonny",
+          "avatar_url": "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg"
         }
       ]
     }
