@@ -16,8 +16,8 @@ exports.getArticles = (req, res, next) => {
 };
 
 exports.getArticleById = (req, res, next) => {
-  const { article_id } = req.params;
-  selectArticleById(article_id)
+  const { id } = req.params;
+  selectArticleById(id)
     .then((article) => {
       res.status(200).send({ article });
     })
@@ -25,8 +25,8 @@ exports.getArticleById = (req, res, next) => {
 };
 
 exports.getCommentsByArticleId = (req, res, next) => {
-  const { article_id } = req.params;
-  selectCommentsByArticleId(article_id)
+  const { id } = req.params;
+  selectCommentsByArticleId(id)
     .then((comments) => {
       res.status(200).send({ comments });
     })
@@ -34,9 +34,9 @@ exports.getCommentsByArticleId = (req, res, next) => {
 };
 
 exports.postCommentByArticleId = (req, res, next) => {
-  const { article_id } = req.params;
+  const { id } = req.params;
   const article = req.body;
-  insertCommentByArticleId(article_id, article)
+  insertCommentByArticleId(id, article)
     .then((comment) => {
       res.status(201).send({ comment });
     })
@@ -44,9 +44,9 @@ exports.postCommentByArticleId = (req, res, next) => {
 };
 
 exports.patchArticleById = (req, res, next) => {
-  const { article_id } = req.params;
+  const { id } = req.params;
   const { inc_votes } = req.body;
-  updateArticleById(article_id, inc_votes)
+  updateArticleById(id, inc_votes)
     .then((article) => {
       res.status(200).send({ article });
     })
@@ -54,8 +54,8 @@ exports.patchArticleById = (req, res, next) => {
 };
 
 exports.deleteArticleById = (req, res, next) => {
-  const { article_id } = req.params;
-  removeArticleById(article_id)
+  const { id } = req.params;
+  removeArticleById(id)
     .then(() => {
       res.status(204).send();
     })
