@@ -530,3 +530,27 @@ describe("GET /api/users", () => {
       });
   });
 });
+
+describe("GET /api/users/:username", () => {
+  test("200: sends a user object to the client", () => {
+    return request(app)
+      .get("/api/users/icellusedkars")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.user).toEqual({
+          username: "icellusedkars",
+          name: "sam",
+          avatar_url:
+            "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4",
+        });
+      });
+  });
+  test("404: returns an error when passed a username that doesn't exist", () => {
+    return request(app)
+      .get("/api/users/hello")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Resource not found");
+      });
+  });
+});
