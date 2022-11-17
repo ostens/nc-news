@@ -31,7 +31,6 @@ describe("GET /api", () => {
       .expect(200)
       .then(({ body }) => {
         const { endpoints } = body;
-        expect(Object.values(endpoints).length).toBe(9);
         for (route in endpoints) {
           expect(endpoints[route]).toEqual(
             expect.objectContaining({
