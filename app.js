@@ -7,6 +7,7 @@ const {
   patchArticleById,
   deleteArticleById,
 } = require("./controllers/articles");
+const { getEndpoints } = require("./controllers/endpoints");
 const { getTopics } = require("./controllers/topics");
 const { getUsers } = require("./controllers/users");
 const {
@@ -17,6 +18,8 @@ const {
 
 const app = express();
 app.use(express.json());
+
+app.get("/api", getEndpoints);
 
 app.get("/api/topics", getTopics);
 

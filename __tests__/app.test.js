@@ -24,6 +24,24 @@ describe("GET /api/not-a-route", () => {
   });
 });
 
+describe("GET /api", () => {
+  test("200: sends an endpoints object to the client describing all endpoints", () => {
+    return request(app)
+      .get("/api")
+      .expect(200)
+      .then(({ body }) => {
+        const { endpoints } = body;
+        for (route in endpoints) {
+          expect(endpoints[route]).toEqual(
+            expect.objectContaining({
+              description: expect.any(String),
+            })
+          );
+        }
+      });
+  });
+});
+
 describe("GET /api/topics", () => {
   test("200: sends an array of topics to the client", () => {
     return request(app)
