@@ -102,6 +102,15 @@ describe("GET /api/articles", () => {
           expect(total_count).toBe(12);
         });
     });
+    test("200: returns a total_count property to the client when a filter is applies", () => {
+      return request(app)
+        .get("/api/articles?topic=paper")
+        .expect(200)
+        .then(({ body }) => {
+          const { total_count } = body;
+          expect(total_count).toBe(0);
+        });
+    });
     test("200: returns limited number of responses if limit is passed", () => {
       return request(app)
         .get("/api/articles?limit=5")
