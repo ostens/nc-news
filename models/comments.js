@@ -14,3 +14,14 @@ exports.updateCommentById = async (id, votes) => {
   );
   return result.rows[0];
 };
+
+exports.removeCommentById = async (id) => {
+  await checkExists("comments", "comment_id", id);
+  await db.query(
+    `
+    DELETE FROM comments
+    WHERE comment_id = $1;
+    `,
+    [id]
+  );
+};

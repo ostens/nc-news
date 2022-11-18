@@ -796,6 +796,32 @@ describe("PATCH /api/comments/:comment_id", () => {
       });
   });
 });
+describe("DELETE /api/comments/:comment_id", () => {
+  test("204: deletes the given comment and returns no content to the client", () => {
+    return request(app)
+      .delete("/api/comments/1")
+      .expect(204)
+      .then(({ body }) => {
+        expect(body).toEqual({});
+      });
+  });
+  test("400: returns an error message when passed an invalid comment id", () => {
+    return request(app)
+      .delete("/api/comments/bananas")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+  test("404: returns an error message when passed a valid but nonexistent comment id", () => {
+    return request(app)
+      .delete("/api/comments/500")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Resource not found");
+      });
+  });
+});
 
 describe("GET /api/users", () => {
   test("200: sends an array of users to the client", () => {
