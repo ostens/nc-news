@@ -3,23 +3,39 @@ const { checkExists } = require("../utils/db");
 
 exports.selectArticles = async (query) => {
   if (
-    !["sort_by", "order", "topic"].includes(...Object.keys(query)) &&
+    !["sort_by", "order", "topic", "limit", "p"].includes(
+      ...Object.keys(query)
+    ) &&
     Object.keys(query).length !== 0
   ) {
     return Promise.reject({ status: 400, msg: "Invalid query" });
   }
-  const { topic, sort_by = "created_at", order = "desc" } = query;
+  const {
+    topic,
+    sort_by = "created_at",
+    order = "desc",
+    limit = 10,
+    p = 1,
+  } = query;
   if (!["created_at", "votes", "title", "topic", "author"].includes(sort_by)) {
     return Promise.reject({ status: 400, msg: "Invalid sort query" });
   }
   if (!["asc", "desc"].includes(order)) {
     return Promise.reject({ status: 400, msg: "Invalid order query" });
   }
+  if (!parseInt(limit)) {
+    return Promise.reject({ status: 400, msg: "Invalid limit query" });
+  }
+  if (!parseInt(p)) {
+    return Promise.reject({ status: 400, msg: "Invalid page query" });
+  }
 
+  const offset = (parseInt(p) - 1) * parseInt(limit);
   const queryValues = [];
   let queryStr = `
     SELECT articles.article_id, title, topic, articles.author, articles.created_at, articles.votes, 
-    COUNT(comment_id)::INT as comment_count 
+    COUNT(comment_id)::INT as comment_count,
+    COUNT(*) OVER()::INT as total_count
     FROM articles
     LEFT JOIN comments on comments.article_id = articles.article_id
   `;
@@ -31,12 +47,19 @@ exports.selectArticles = async (query) => {
 
   queryStr += `
      GROUP BY articles.article_id
-    ORDER BY ${sort_by} ${order};
+    ORDER BY ${sort_by} ${order}
+    LIMIT ${limit} OFFSET ${offset};
     `;
 
   if (topic) await checkExists("topics", "slug", topic);
   const result = await db.query(queryStr, queryValues);
-  return result.rows;
+  const total_count = result.rows.length ? result.rows[0].total_count : 0;
+  const articles = result.rows.map((article) => {
+    const newArticle = { ...article };
+    delete newArticle.total_count;
+    return newArticle;
+  });
+  return { articles, total_count };
 };
 
 exports.insertArticle = async ({ author, title, body, topic }) => {

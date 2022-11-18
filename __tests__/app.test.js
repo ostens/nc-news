@@ -68,7 +68,6 @@ describe("GET /api/articles", () => {
       .then(({ body }) => {
         const { articles } = body;
         expect(articles).toBeInstanceOf(Array);
-        expect(articles).toHaveLength(12);
         articles.forEach((article) => {
           expect(Object.keys(article)).toEqual(
             expect.arrayContaining([
@@ -83,6 +82,61 @@ describe("GET /api/articles", () => {
           );
         });
       });
+  });
+  describe("queries - pagination", () => {
+    test("200: defaults to returning 10 responses when not passed a limit", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body }) => {
+          const { articles } = body;
+          expect(articles.length).toBe(10);
+        });
+    });
+    test("200: returns a total_count property to the client", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body }) => {
+          const { total_count } = body;
+          expect(total_count).toBe(12);
+        });
+    });
+    test("200: returns limited number of responses if limit is passed", () => {
+      return request(app)
+        .get("/api/articles?limit=5")
+        .expect(200)
+        .then(({ body }) => {
+          const { articles } = body;
+          expect(articles.length).toBe(5);
+        });
+    });
+    test("200: returns page of results if passed page", () => {
+      return request(app)
+        .get("/api/articles?p=2")
+        .expect(200)
+        .then(({ body }) => {
+          // 12 articles in total with default 10 articles, so page 2 should have length 2
+          const { articles } = body;
+          expect(articles.length).toBe(2);
+        });
+    });
+    test("400: returns an error message when passed an invalid limit ", () => {
+      return request(app)
+        .get("/api/articles?limit=banana")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Invalid limit query");
+        });
+    });
+    test("400: returns an error message when passed an invalid page ", () => {
+      return request(app)
+        .get("/api/articles?p=banana")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Invalid page query");
+        });
+    });
   });
   describe("queries - topic", () => {
     test("200: filters by topic when topic is passed in query", () => {
