@@ -306,7 +306,6 @@ describe("GET /api/articles/:article_id/comments", () => {
       .expect(200)
       .then(({ body }) => {
         const { comments } = body;
-        expect(comments).toHaveLength(11);
         comments.forEach((comment) => {
           expect(comment).toMatchObject({
             comment_id: expect.any(Number),
@@ -351,6 +350,61 @@ describe("GET /api/articles/:article_id/comments", () => {
       .then(({ body }) => {
         expect(body.msg).toBe("Resource not found");
       });
+  });
+  describe("queries - pagination", () => {
+    test("200: defaults to returning 10 responses when not passed a limit", () => {
+      return request(app)
+        .get("/api/articles/1/comments")
+        .expect(200)
+        .then(({ body }) => {
+          const { comments } = body;
+          expect(comments.length).toBe(10);
+        });
+    });
+    test("200: returns a total_count property to the client", () => {
+      return request(app)
+        .get("/api/articles/1/comments")
+        .expect(200)
+        .then(({ body }) => {
+          const { total_count } = body;
+          expect(total_count).toBe(11);
+        });
+    });
+    test("200: returns limited number of responses if limit is passed", () => {
+      return request(app)
+        .get("/api/articles/1/comments?limit=5")
+        .expect(200)
+        .then(({ body }) => {
+          const { comments } = body;
+          expect(comments.length).toBe(5);
+        });
+    });
+    test("200: returns page of results if passed page", () => {
+      return request(app)
+        .get("/api/articles/1/comments?p=2")
+        .expect(200)
+        .then(({ body }) => {
+          // 11 comments in total with default 10 comments, so page 2 should have length 1
+          const { comments } = body;
+          expect(comments.length).toBe(1);
+        });
+    });
+    test("400: returns an error message when passed an invalid limit ", () => {
+      return request(app)
+        .get("/api/articles/1/comments?limit=banana")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Invalid limit query");
+        });
+    });
+    test("400: returns an error message when passed an invalid page ", () => {
+      return request(app)
+        .get("/api/articles/1/comments?p=banana")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Invalid page query");
+        });
+    });
   });
 });
 
