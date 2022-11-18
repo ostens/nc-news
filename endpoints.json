@@ -144,6 +144,11 @@
       }
     }
   },
+  "DELETE /api/comments/:comment_id": {
+    "description": "deletes a comment",
+    "queries": [],
+    "exampleResponse": {}
+  },
   "GET /api/users": {
     "description": "serves an array of all users",
     "queries": [],
