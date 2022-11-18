@@ -1,7 +1,7 @@
 const db = require("../db/connection");
 const { checkExists } = require("../utils/db");
 
-exports.selectArticles = (query) => {
+exports.selectArticles = async (query) => {
   if (
     !["sort_by", "order", "topic"].includes(...Object.keys(query)) &&
     Object.keys(query).length !== 0
@@ -34,39 +34,30 @@ exports.selectArticles = (query) => {
     ORDER BY ${sort_by} ${order};
     `;
 
-  return db.query(queryStr, queryValues).then(({ rows }) => {
-    if (!rows.length) {
-      return checkExists("topics", "slug", topic).then(() => {
-        return [];
-      });
-    }
-    return rows;
-  });
+  if (topic) await checkExists("topics", "slug", topic);
+  const result = await db.query(queryStr, queryValues);
+  return result.rows;
 };
 
-exports.insertArticle = ({ author, title, body, topic }) => {
-  return db
-    .query(
-      `
+exports.insertArticle = async ({ author, title, body, topic }) => {
+  const result = await db.query(
+    `
       INSERT INTO articles
       (author, title, body, topic)
       VALUES
       ($1, $2, $3, $4)
       RETURNING *;
   `,
-      [author, title, body, topic]
-    )
-    .then(({ rows }) => {
-      const article = rows[0];
-      article.comment_count = 0;
-      return article;
-    });
+    [author, title, body, topic]
+  );
+  const article = result.rows[0];
+  article.comment_count = 0;
+  return article;
 };
 
-exports.selectArticleById = (id) => {
-  return db
-    .query(
-      `SELECT articles.article_id,
+exports.selectArticleById = async (id) => {
+  const result = await db.query(
+    `SELECT articles.article_id,
       articles.author,
       title,
       articles.body,
@@ -78,76 +69,64 @@ exports.selectArticleById = (id) => {
       LEFT JOIN comments on comments.article_id = articles.article_id
       WHERE articles.article_id = $1
       GROUP BY articles.article_id`,
-      [id]
-    )
-    .then(({ rows }) => {
-      if (!rows.length) {
-        return Promise.reject({ status: 404, msg: "Resource not found" });
-      }
-      return rows[0];
-    });
+    [id]
+  );
+  if (!result.rows.length) {
+    return Promise.reject({ status: 404, msg: "Resource not found" });
+  }
+  const article = result.rows[0];
+  return article;
 };
 
-exports.selectCommentsByArticleId = (id) => {
-  return checkExists("articles", "article_id", id)
-    .then(() => {
-      return db.query(
-        `
-        SELECT comment_id, votes, created_at, author, body FROM comments
-        WHERE article_id = $1
-        ORDER BY created_at DESC;
+exports.selectCommentsByArticleId = async (id) => {
+  await checkExists("articles", "article_id", id);
+  const result = await db.query(
+    `
+      SELECT comment_id, votes, created_at, author, body FROM comments
+      WHERE article_id = $1
+      ORDER BY created_at DESC;
       `,
-        [id]
-      );
-    })
-    .then(({ rows }) => {
-      return rows;
-    });
+    [id]
+  );
+  return result.rows;
 };
 
-exports.insertCommentByArticleId = (articleId, article) => {
-  return checkExists("articles", "article_id", articleId)
-    .then(() => {
-      return db.query(
-        `
-        INSERT INTO comments
-        (author, body, article_id)
-        VALUES
-        ($1, $2, $3)
-        RETURNING *;
+exports.insertCommentByArticleId = async (articleId, article) => {
+  await checkExists("articles", "article_id", articleId);
+  const result = await db.query(
+    `
+      INSERT INTO comments
+      (author, body, article_id)
+      VALUES
+      ($1, $2, $3)
+      RETURNING *;
     `,
-        [article.username, article.body, articleId]
-      );
-    })
-    .then(({ rows }) => rows[0]);
+    [article.username, article.body, articleId]
+  );
+  return result.rows[0];
 };
 
-exports.updateArticleById = (id, votes) => {
-  return checkExists("articles", "article_id", id)
-    .then(() => {
-      return db.query(
-        `
-          UPDATE articles
-          SET votes = votes + $2
-          WHERE article_id = $1
-          RETURNING *;
+exports.updateArticleById = async (id, votes) => {
+  await checkExists("articles", "article_id", id);
+  const result = await db.query(
+    `
+      UPDATE articles
+      SET votes = votes + $2
+      WHERE article_id = $1
+      RETURNING *;
         `,
-        [id, votes]
-      );
-    })
-    .then(({ rows }) => {
-      return rows[0];
-    });
+    [id, votes]
+  );
+  return result.rows[0];
 };
 
-exports.removeArticleById = (id) => {
-  return checkExists("articles", "article_id", id).then(() => {
-    return db.query(
-      `
+exports.removeArticleById = async (id) => {
+  await checkExists("articles", "article_id", id);
+  await db.query(
+    `
     DELETE FROM articles
     WHERE article_id = $1;
     `,
-      [id]
-    );
-  });
+    [id]
+  );
 };

@@ -8,65 +8,72 @@ const {
   insertArticle,
 } = require("../models/articles");
 
-exports.getArticles = (req, res, next) => {
-  selectArticles(req.query)
-    .then((articles) => {
-      res.status(200).send({ articles });
-    })
-    .catch(next);
+exports.getArticles = async (req, res, next) => {
+  try {
+    const articles = await selectArticles(req.query);
+    res.status(200).send({ articles });
+  } catch (err) {
+    next(err);
+  }
 };
 
-exports.postArticle = (req, res, next) => {
-  insertArticle(req.body)
-    .then((article) => {
-      res.status(201).send({ article });
-    })
-    .catch(next);
+exports.postArticle = async (req, res, next) => {
+  try {
+    const article = await insertArticle(req.body);
+    res.status(201).send({ article });
+  } catch (err) {
+    next(err);
+  }
 };
 
-exports.getArticleById = (req, res, next) => {
-  const { id } = req.params;
-  selectArticleById(id)
-    .then((article) => {
-      res.status(200).send({ article });
-    })
-    .catch(next);
+exports.getArticleById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const article = await selectArticleById(id);
+    res.status(200).send({ article });
+  } catch (err) {
+    next(err);
+  }
 };
 
-exports.getCommentsByArticleId = (req, res, next) => {
-  const { id } = req.params;
-  selectCommentsByArticleId(id)
-    .then((comments) => {
-      res.status(200).send({ comments });
-    })
-    .catch(next);
+exports.getCommentsByArticleId = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const comments = await selectCommentsByArticleId(id);
+    res.status(200).send({ comments });
+  } catch (err) {
+    next(err);
+  }
 };
 
-exports.postCommentByArticleId = (req, res, next) => {
-  const { id } = req.params;
-  const article = req.body;
-  insertCommentByArticleId(id, article)
-    .then((comment) => {
-      res.status(201).send({ comment });
-    })
-    .catch(next);
+exports.postCommentByArticleId = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const article = req.body;
+    const comment = await insertCommentByArticleId(id, article);
+    res.status(201).send({ comment });
+  } catch (err) {
+    next(err);
+  }
 };
 
-exports.patchArticleById = (req, res, next) => {
-  const { id } = req.params;
-  const { inc_votes } = req.body;
-  updateArticleById(id, inc_votes)
-    .then((article) => {
-      res.status(200).send({ article });
-    })
-    .catch(next);
+exports.patchArticleById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { inc_votes } = req.body;
+    const article = await updateArticleById(id, inc_votes);
+    res.status(200).send({ article });
+  } catch (err) {
+    next(err);
+  }
 };
 
-exports.deleteArticleById = (req, res, next) => {
-  const { id } = req.params;
-  removeArticleById(id)
-    .then(() => {
-      res.status(204).send();
-    })
-    .catch(next);
+exports.deleteArticleById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    await removeArticleById(id);
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
 };

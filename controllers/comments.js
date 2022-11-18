@@ -1,11 +1,12 @@
 const { updateCommentById } = require("../models/comments");
 
-exports.patchCommentById = (req, res, next) => {
-  const { id } = req.params;
-  const { inc_votes } = req.body;
-  updateCommentById(id, inc_votes)
-    .then((comment) => {
-      res.status(200).send({ comment });
-    })
-    .catch(next);
+exports.patchCommentById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { inc_votes } = req.body;
+    const comment = await updateCommentById(id, inc_votes);
+    res.status(200).send({ comment });
+  } catch (err) {
+    next(err);
+  }
 };
