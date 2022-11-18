@@ -367,7 +367,7 @@ describe("POST /api/articles/:article_id/comments", () => {
       .send(newComment)
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("User does not exist");
+        expect(body.msg).toBe("Resource does not exist");
       });
   });
   test("400: returns an error message when passed misspelled username property", () => {
@@ -478,6 +478,73 @@ describe("PATCH /api/articles/:article_id", () => {
     return request(app)
       .patch("/api/articles/1")
       .send({})
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+});
+
+describe("POST /api/articles", () => {
+  test("201: creates an article and sends the created article to the client", () => {
+    return request(app)
+      .post("/api/articles")
+      .send({
+        author: "butter_bridge",
+        title: "New article",
+        body: "Something cool",
+        topic: "cats",
+      })
+      .expect(201)
+      .then(({ body }) => {
+        const { article } = body;
+        expect(article).toEqual({
+          article_id: 13,
+          title: "New article",
+          topic: "cats",
+          author: "butter_bridge",
+          body: "Something cool",
+          created_at: expect.any(String),
+          votes: 0,
+        });
+      });
+  });
+  test("404: returns an error when passed an author that does not exist", () => {
+    return request(app)
+      .post("/api/articles")
+      .send({
+        author: "frodo",
+        title: "there and back again",
+        body: "my book",
+        topic: "cats",
+      })
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Resource does not exist");
+      });
+  });
+  test("404: returns an error when passed a topic that does not exist", () => {
+    return request(app)
+      .post("/api/articles")
+      .send({
+        author: "butter_bridge",
+        title: "there and back again",
+        body: "my book",
+        topic: "hobbits",
+      })
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Resource does not exist");
+      });
+  });
+  test("400: returns an error when passed a missing required field", () => {
+    return request(app)
+      .post("/api/articles")
+      .send({
+        title: "there and back again",
+        body: "my book",
+        topic: "hobbits",
+      })
       .expect(400)
       .then(({ body }) => {
         expect(body.msg).toBe("Bad request");
