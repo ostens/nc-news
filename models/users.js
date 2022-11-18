@@ -1,24 +1,19 @@
 const db = require("../db/connection");
 const { checkExists } = require("../utils/db");
 
-exports.selectUsers = () => {
-  return db.query(`SELECT * FROM users;`).then(({ rows }) => {
-    return rows;
-  });
+exports.selectUsers = async () => {
+  const result = await db.query(`SELECT * FROM users;`);
+  return result.rows;
 };
 
-exports.selectUserByUsername = (username) => {
-  return checkExists("users", "username", username)
-    .then(() => {
-      return db.query(
-        `
-        SELECT * FROM users 
-        WHERE username = $1;
+exports.selectUserByUsername = async (username) => {
+  await checkExists("users", "username", username);
+  const result = await db.query(
+    `
+      SELECT * FROM users 
+      WHERE username = $1;
       `,
-        [username]
-      );
-    })
-    .then(({ rows }) => {
-      return rows[0];
-    });
+    [username]
+  );
+  return result.rows[0];
 };
