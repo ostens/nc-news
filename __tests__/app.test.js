@@ -506,6 +506,7 @@ describe("POST /api/articles", () => {
           body: "Something cool",
           created_at: expect.any(String),
           votes: 0,
+          comment_count: 0,
         });
       });
   });

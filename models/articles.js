@@ -57,7 +57,9 @@ exports.insertArticle = ({ author, title, body, topic }) => {
       [author, title, body, topic]
     )
     .then(({ rows }) => {
-      return rows[0];
+      const article = rows[0];
+      article.comment_count = 0;
+      return article;
     });
 };
 
