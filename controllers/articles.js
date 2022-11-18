@@ -10,8 +10,8 @@ const {
 
 exports.getArticles = async (req, res, next) => {
   try {
-    const result = await selectArticles(req.query);
-    res.status(200).send(result);
+    const { articles, total_count } = await selectArticles(req.query);
+    res.status(200).send({ articles, total_count });
   } catch (err) {
     next(err);
   }
