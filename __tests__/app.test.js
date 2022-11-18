@@ -60,6 +60,41 @@ describe("GET /api/topics", () => {
   });
 });
 
+describe("POST /api/topics", () => {
+  test("201: creates a new topic and returns the new topic to the client", () => {
+    return request(app)
+      .post("/api/topics")
+      .send({ slug: "dogs", description: "pictures of cute pups" })
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.topic).toEqual(
+          expect.objectContaining({
+            slug: "dogs",
+            description: "pictures of cute pups",
+          })
+        );
+      });
+  });
+  test("400: returns an error if passed a slug that already exists", () => {
+    return request(app)
+      .post("/api/topics")
+      .send({ slug: "mitch", description: "pictures of cute pups" })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Resource already exists");
+      });
+  });
+  test("400: returns an error if passed an object with missing required property", () => {
+    return request(app)
+      .post("/api/topics")
+      .send({ description: "coding" })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+});
+
 describe("GET /api/articles", () => {
   test("200: sends an array of articles to the client", () => {
     return request(app)
