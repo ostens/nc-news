@@ -101,17 +101,33 @@ exports.selectArticleById = async (id) => {
   return article;
 };
 
-exports.selectCommentsByArticleId = async (id) => {
+exports.selectCommentsByArticleId = async (id, limit = 10, p = 1) => {
   await checkExists("articles", "article_id", id);
+  if (!parseInt(limit)) {
+    return Promise.reject({ status: 400, msg: "Invalid limit query" });
+  }
+  if (!parseInt(p)) {
+    return Promise.reject({ status: 400, msg: "Invalid page query" });
+  }
+  const offset = (parseInt(p) - 1) * parseInt(limit);
   const result = await db.query(
     `
-      SELECT comment_id, votes, created_at, author, body FROM comments
+      SELECT comment_id, votes, created_at, author, body,
+      COUNT(*) OVER()::INT as total_count
+      FROM comments
       WHERE article_id = $1
-      ORDER BY created_at DESC;
+      ORDER BY created_at DESC
+      LIMIT $2 OFFSET $3;
       `,
-    [id]
+    [id, limit, offset]
   );
-  return result.rows;
+  const total_count = result.rows.length ? result.rows[0].total_count : 0;
+  const comments = result.rows.map((comment) => {
+    const newComment = { ...comment };
+    delete newComment.total_count;
+    return newComment;
+  });
+  return { comments, total_count };
 };
 
 exports.insertCommentByArticleId = async (articleId, article) => {
