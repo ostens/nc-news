@@ -17,7 +17,16 @@ exports.selectArticles = async (query) => {
     limit = 10,
     p = 1,
   } = query;
-  if (!["created_at", "votes", "title", "topic", "author"].includes(sort_by)) {
+  if (
+    ![
+      "created_at",
+      "votes",
+      "title",
+      "topic",
+      "author",
+      "comment_count",
+    ].includes(sort_by)
+  ) {
     return Promise.reject({ status: 400, msg: "Invalid sort query" });
   }
   if (!["asc", "desc"].includes(order)) {
